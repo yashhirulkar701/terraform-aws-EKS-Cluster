@@ -23,6 +23,11 @@ variable "eks_instance_type" {
   default = ["t3.medium"]
 }
 
+variable "node_disk_size" {
+  type    = number
+  default = 20
+}
+
 variable "desired_vm_size" {
   type    = number
   default = 2

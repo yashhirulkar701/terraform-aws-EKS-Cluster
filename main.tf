@@ -166,6 +166,7 @@ resource "aws_eks_node_group" "eks_nodes" {
   node_role_arn   = aws_iam_role.eks_node_role.arn
   subnet_ids      = aws_subnet.eks_sub.*.id
   instance_types  = var.eks_instance_type
+  disk_size       = var.node_disk_size
 
   scaling_config {
     desired_size = var.desired_vm_size
