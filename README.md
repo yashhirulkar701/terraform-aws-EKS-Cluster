@@ -5,7 +5,6 @@ Terraform module which creates AWS EKS (Kubernetes) resources
 
 ### External Documentation
 
-Please note that we strive to provide a comprehensive suite of documentation for __*configuring and utilizing the module(s)*__ defined here, and that documentation regarding EKS (including EKS managed node group, self managed node group, and Fargate profile) and/or Kubernetes features, usage, etc. are better left up to their respective sources:
 - [AWS EKS Documentation](https://docs.aws.amazon.com/eks/latest/userguide/getting-started.html)
 - [Kubernetes Documentation](https://kubernetes.io/docs/home/)
 
