@@ -4,7 +4,7 @@ output "availability_zones" {
 }
 
 output "eks_subnets" {
-  description = "to get the subnet"
+  description = "to get the list subnets"
   value       = aws_eks_cluster.eks_cluster.vpc_config.*.subnet_ids
 }
 
