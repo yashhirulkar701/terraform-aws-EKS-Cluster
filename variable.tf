@@ -62,21 +62,17 @@ variable "sg_rules" {
   description = "values for each security group rule"
   type = list(object({
     description = string
+    cidr_blocks = list(string)
     from_port   = number
     to_port     = number
     protocol    = string
   }))
   default = [
     {
-      description = "for ssh"
+      description = "Allow inbound traffic for ssh"
+      cidr_blocks = ["10.0.0.0/8"]
       from_port   = 22
       to_port     = 22
-      protocol    = "tcp"
-    },
-    {
-      description = "for http"
-      from_port   = 80
-      to_port     = 80
       protocol    = "tcp"
     }
   ]

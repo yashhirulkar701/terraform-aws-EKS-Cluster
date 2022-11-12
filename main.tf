@@ -9,6 +9,62 @@ resource "aws_vpc" "eks_vpc" {
   }
 }
 
+resource "aws_iam_role" "vpc_log_role" {
+  name = "vpc-logs-role"
+
+  assume_role_policy = <<EOF
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "",
+      "Effect": "Allow",
+      "Principal": {
+        "Service": "vpc-flow-logs.amazonaws.com"
+      },
+      "Action": "sts:AssumeRole"
+    }
+  ]
+}
+EOF
+} 
+
+resource "aws_iam_role_policy" "vpc_log_role_policy" {
+  name = "vpc_log_role_policy"
+  role = aws_iam_role.vpc_log_role.id
+
+  policy = <<EOF
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Action": [
+        "logs:CreateLogGroup",
+        "logs:CreateLogStream",
+        "logs:PutLogEvents",
+        "logs:DescribeLogGroups",
+        "logs:DescribeLogStreams"
+      ],
+      "Effect": "Allow",
+      "Resource": "*"
+    }
+  ]
+}
+EOF
+}
+
+resource "aws_cloudwatch_log_group" "cloudwatch_log" {
+  name = "VPC_log_group"
+  retention_in_days = 1
+}
+
+resource "aws_flow_log" "vpc_flow_logs" {
+  iam_role_arn    = aws_iam_role.vpc_log_role.arn
+  log_destination = aws_cloudwatch_log_group.cloudwatch_log.arn
+  traffic_type    = "ALL"
+  vpc_id          = aws_vpc.eks_vpc.id
+}
+
 resource "aws_subnet" "eks_sub" {
   count                   = var.sub_count
   vpc_id                  = aws_vpc.eks_vpc.id
@@ -55,14 +111,15 @@ resource "aws_security_group" "eks_sg" {
     for_each = var.sg_rules
     content {
       description = ingress.value["description"]
+      cidr_blocks = ingress.value["cidr_blocks"]
       from_port   = ingress.value["from_port"]
       to_port     = ingress.value["to_port"]
       protocol    = ingress.value["protocol"]
-      cidr_blocks = ["0.0.0.0/0"]
     }
   }
 
   egress {
+    description      = "Allow trrafic to reach everywhere"
     from_port        = 0
     to_port          = 0
     protocol         = "-1"
@@ -107,14 +164,17 @@ resource "aws_iam_role_policy_attachment" "service_policy_attach" {
 }
 
 resource "aws_eks_cluster" "eks_cluster" {
-  name     = "terraform-EKS"
+  name     = "Terraform-EKS"
   role_arn = aws_iam_role.eks_role.arn
   version  = var.cluster_version
 
   vpc_config {
-    security_group_ids = [aws_security_group.eks_sg.id]
-    subnet_ids         = flatten([aws_subnet.eks_sub.*.id])
+    security_group_ids     = [aws_security_group.eks_sg.id]
+    subnet_ids             = flatten([aws_subnet.eks_sub.*.id])
+    endpoint_public_access = true
   }
+
+  enabled_cluster_log_types = ["api", "audit", "authenticator", "controllerManager", "scheduler"]
 
   depends_on = [
     aws_iam_role_policy_attachment.cluster_policy_attach,
