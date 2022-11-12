@@ -58,6 +58,12 @@ variable "max_vm_unavailable" {
   default     = 1
 }
 
+variable "logs_retention_days" {
+  description = "number of days to retain the logs"
+  type        = number
+  default     = 1
+}
+
 variable "sg_rules" {
   description = "values for each security group rule"
   type = list(object({

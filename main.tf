@@ -55,7 +55,7 @@ EOF
 
 resource "aws_cloudwatch_log_group" "cloudwatch_log" {
   name = "VPC_log_group"
-  retention_in_days = 1
+  retention_in_days = var.logs_retention_days
 }
 
 resource "aws_flow_log" "vpc_flow_logs" {
